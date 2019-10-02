@@ -217,6 +217,8 @@ extension FolioReaderContainer {
             message: message,
             preferredStyle: UIAlertController.Style.alert
         )
+        alertController.overrideUserInterfaceStyle = .light
+
         let action = UIAlertAction(title: "OK", style: UIAlertAction.Style.cancel) { [weak self]
             (result : UIAlertAction) -> Void in
             self?.dismiss()

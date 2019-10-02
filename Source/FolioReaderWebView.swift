@@ -74,6 +74,7 @@ open class FolioReaderWebView: UIWebView {
 
     @objc func share(_ sender: UIMenuController) {
         let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        alertController.overrideUserInterfaceStyle = .light
 
         let shareImage = UIAlertAction(title: self.readerConfig.localizedShareImageQuote, style: .default, handler: { (action) -> Void in
             if self.isShare {
