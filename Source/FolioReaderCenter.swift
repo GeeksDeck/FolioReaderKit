@@ -55,7 +55,7 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
     var pages: [String]!
     var totalPages: Int = 0
     var tempFragment: String?
-    var animator: ZFModalTransitionAnimator!
+//    var animator: ZFModalTransitionAnimator!
     var pageIndicatorView: FolioReaderPageIndicator?
     var pageIndicatorHeight: CGFloat = 20
     var recentlyScrolled = false
@@ -1351,17 +1351,13 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         hideBars()
 
         let menu = FolioReaderFontsMenu(folioReader: folioReader, readerConfig: readerConfig)
-        menu.modalPresentationStyle = .custom
+        if #available(iOS 13.0, *) {
+            menu.isModalInPresentation = true
+            menu.modalPresentationStyle = .overFullScreen
 
-        animator = ZFModalTransitionAnimator(modalViewController: menu)
-        animator.isDragable = false
-        animator.bounces = false
-        animator.behindViewAlpha = 0.4
-        animator.behindViewScale = 1
-        animator.transitionDuration = 0.6
-        animator.direction = ZFModalTransitonDirection.bottom
-
-        menu.transitioningDelegate = animator
+        } else {
+            menu.modalPresentationStyle = .custom
+        }
         self.present(menu, animated: true, completion: nil)
     }
 
@@ -1373,17 +1369,13 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         hideBars()
 
         let menu = FolioReaderPlayerMenu(folioReader: folioReader, readerConfig: readerConfig)
-        menu.modalPresentationStyle = .custom
+        if #available(iOS 13.0, *) {
+            menu.isModalInPresentation = true
+            menu.modalPresentationStyle = .overFullScreen
 
-        animator = ZFModalTransitionAnimator(modalViewController: menu)
-        animator.isDragable = true
-        animator.bounces = false
-        animator.behindViewAlpha = 0.4
-        animator.behindViewScale = 1
-        animator.transitionDuration = 0.6
-        animator.direction = ZFModalTransitonDirection.bottom
-
-        menu.transitioningDelegate = animator
+        } else {
+            menu.modalPresentationStyle = .custom
+        }
         present(menu, animated: true, completion: nil)
     }
 
