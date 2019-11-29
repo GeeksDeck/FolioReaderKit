@@ -134,11 +134,13 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         
         setPageSize(UIApplication.shared.statusBarOrientation)
 
-        // Layout
         collectionViewLayout.sectionInset = UIEdgeInsets.zero
         collectionViewLayout.minimumLineSpacing = 0
         collectionViewLayout.minimumInteritemSpacing = 0
         collectionViewLayout.scrollDirection = .direction(withConfiguration: self.readerConfig)
+        collectionViewLayout.itemSize = getCollectionViewCellSize(width: self.view.frame.size.width)
+//        self.collectionView.setCollectionViewLayout(collectionViewLayout, animated: true)
+//        self.collectionView.collectionViewLayout.invalidateLayout()
         
         let background = folioReader.isNight(self.readerConfig.nightModeBackground, UIColor.white)
         view.backgroundColor = background
@@ -215,6 +217,21 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
 
         setPageSize(UIApplication.shared.statusBarOrientation)
         updateSubviewFrames()
+        
+        // Layout
+        updateFlowLayout()
+
+    }
+    
+    func updateFlowLayout() {
+        
+        collectionViewLayout.sectionInset = UIEdgeInsets.zero
+        collectionViewLayout.minimumLineSpacing = 0
+        collectionViewLayout.minimumInteritemSpacing = 0
+        collectionViewLayout.scrollDirection = .direction(withConfiguration: self.readerConfig)
+        collectionViewLayout.itemSize = getCollectionViewCellSize(width: self.view.frame.size.width)
+        self.collectionView.setCollectionViewLayout(collectionViewLayout, animated: true)
+        self.collectionView.collectionViewLayout.invalidateLayout()
     }
 
     // MARK: Layout
@@ -341,6 +358,50 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         let contentSize = pageScrollView.contentSize.forDirection(withConfiguration: self.readerConfig)
         let contentOffset = pageScrollView.contentOffset.forDirection(withConfiguration: self.readerConfig)
         self.pageOffsetRate = (contentSize != 0 ? (contentOffset / contentSize) : 0)
+    }
+    
+    override open func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        let currentChapterName = getCurrentChapterName()
+        
+        func searchCurrentHref(_ items: [FRTocReference]) -> String? {
+            for item in items {
+                if item.title == currentChapterName {
+                    return item.resource?.href
+                }
+            }
+            return nil
+        }
+        let currentHref = searchCurrentHref(self.book.flatTableOfContents)
+        
+        super.viewWillTransition(to: size, with: coordinator)
+        adaptInterface(to: size)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(500)) {
+            if let currentHref = currentHref {
+                self.changePageWith(href: currentHref)
+            }
+        }
+    }
+           
+    func adaptInterface(to size: CGSize, fromViewDidAppear: Bool = false) {
+        updateFlowLayout()
+
+    }
+
+    func getCollectionViewCellSize(width: CGFloat) -> CGSize {
+        var size = CGSize(width: width , height: self.getScreenBounds().size.height)
+
+        if #available(iOS 11.0, *) {
+            let orientation = UIDevice.current.orientation
+
+            if orientation == .portrait || orientation == .portraitUpsideDown {
+                if readerConfig.scrollDirection == .horizontal {
+                    size.height = size.height - view.safeAreaInsets.bottom
+                }
+            }
+        }
+
+        return size
     }
 
     func setScrollDirection(_ direction: FolioReaderScrollDirection) {
@@ -498,23 +559,26 @@ open class FolioReaderCenter: UIViewController, UICollectionViewDelegate, UIColl
         cell.loadHTMLString(html, baseURL: URL(fileURLWithPath: resource.fullHref.deletingLastPathComponent))
         return cell
     }
-
-    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        var size = CGSize(width: collectionView.frame.width, height: collectionView.frame.height)
-        
-        if #available(iOS 11.0, *) {
-            let orientation = UIDevice.current.orientation
-            
-            if orientation == .portrait || orientation == .portraitUpsideDown {
-                if readerConfig.scrollDirection == .horizontal {
-                    size.height = size.height - view.safeAreaInsets.bottom
-                }
-            }
-        }
-        
-        return size
-    }
     
+    
+    
+//    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+//        //collectionView.frame.width
+//        var size = CGSize(width: StaticPorpertys.currentViewSize.width , height: collectionView.frame.height)
+//
+//        if #available(iOS 11.0, *) {
+//            let orientation = UIDevice.current.orientation
+//
+//            if orientation == .portrait || orientation == .portraitUpsideDown {
+//                if readerConfig.scrollDirection == .horizontal {
+//                    size.height = size.height - view.safeAreaInsets.bottom
+//                }
+//            }
+//        }
+//
+//        return size
+//    }
+//
     // MARK: - Device rotation
 
     override open func willRotate(to toInterfaceOrientation: UIInterfaceOrientation, duration: TimeInterval) {

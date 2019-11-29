@@ -262,7 +262,7 @@ open class FolioReaderPage: UICollectionViewCell, UIWebViewDelegate, UIGestureRe
 
             // Handle internal url
             if !url.pathExtension.isEmpty {
-                let pathComponent = (self.book.opfResource.href as NSString?)?.deletingLastPathComponent
+                _ = (self.book.opfResource.href as NSString?)?.deletingLastPathComponent
                 
                 let base = "/"
                 
@@ -529,7 +529,7 @@ open class FolioReaderPage: UICollectionViewCell, UIWebViewDelegate, UIGestureRe
     
     // MARK: - Public Java Script injection
     
-    /** 
+    /**
      Runs a JavaScript script and returns it result. The result of running the JavaScript script passed in the script parameter, or nil if the script fails.
      
      - returns: The result of running the JavaScript script passed in the script parameter, or nil if the script fails.

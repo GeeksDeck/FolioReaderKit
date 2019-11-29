@@ -69,7 +69,9 @@ public enum FolioReaderFontSize: Int {
 
 class FolioReaderFontsMenu: UIViewController, SMSegmentViewDelegate, UIGestureRecognizerDelegate {
     var menuView: UIView!
-
+    var fontSmallView : UIImageView!
+    var fontBigView :UIImageView!
+    
     fileprivate var readerConfig: FolioReaderConfig
     fileprivate var folioReader: FolioReader
 
@@ -82,6 +84,59 @@ class FolioReaderFontsMenu: UIViewController, SMSegmentViewDelegate, UIGestureRe
 
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        adaptInterface(to: size)
+    }
+    
+    func adaptInterface(to size: CGSize, fromViewDidAppear: Bool = false) {
+        updateMenuSize(size: size)
+    }
+    
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        updateMenuSize(size: self.view.frame.size)
+    }
+    
+    func updateMenuSize(size: CGSize) {
+        var visibleHeight: CGFloat = self.readerConfig.canChangeScrollDirection ? 222 : 170
+        visibleHeight = self.readerConfig.canChangeFontStyle ? visibleHeight : visibleHeight - 55
+        var segmentIndex = 0
+        menuView.frame = CGRect(x: 0, y: size.height-visibleHeight, width: size.width, height: size.height)
+        for view in menuView.subviews {
+            if let view = view as? SMSegmentView {
+                switch segmentIndex {
+                    case 0:
+                        view.frame.size = CGSize(width: size.width, height: 55)
+                        break
+                    case 1:
+                        let fontNameHeight: CGFloat = self.readerConfig.canChangeFontStyle ? 55: 0
+                        view.frame.size = CGSize(width: size.width - 30, height: fontNameHeight)
+                        break
+                    case 2:
+                        view.frame.size = CGSize(width: size.width, height: 55)
+                        break
+                   
+                    default:
+                        break
+                }
+                view.updateFrameForSegments()
+            }
+            
+            if let slider = view as? HADiscreteSlider {
+                slider.frame.size = CGSize(width: size.width-120, height: 55)
+                slider.layoutTrack()
+                slider.layoutThumb()
+                slider.setNeedsDisplay()
+            }
+            segmentIndex += 1
+        }
+        self.fontBigView.frame.origin.x = view.frame.width-50
+        menuView.layer.shadowPath = UIBezierPath(rect: menuView.bounds).cgPath
     }
 
     override func viewDidLoad() {
@@ -210,12 +265,12 @@ class FolioReaderFontsMenu: UIViewController, SMSegmentViewDelegate, UIGestureRe
         menuView.addSubview(slider)
 
         // Font icons
-        let fontSmallView = UIImageView(frame: CGRect(x: 20, y: line2.frame.origin.y+14, width: 30, height: 30))
+        self.fontSmallView = UIImageView(frame: CGRect(x: 20, y: line2.frame.origin.y+14, width: 30, height: 30))
         fontSmallView.image = fontSmallNormal
         fontSmallView.contentMode = UIView.ContentMode.center
         menuView.addSubview(fontSmallView)
 
-        let fontBigView = UIImageView(frame: CGRect(x: view.frame.width-50, y: line2.frame.origin.y+14, width: 30, height: 30))
+        self.fontBigView = UIImageView(frame: CGRect(x: view.frame.width-50, y: line2.frame.origin.y+14, width: 30, height: 30))
         fontBigView.image = fontBigNormal
         fontBigView.contentMode = UIView.ContentMode.center
         menuView.addSubview(fontBigView)
